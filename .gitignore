@@ -1,0 +1,80 @@
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+.vs/
+
+# Rider
+.idea/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Logs
+*.log
+
+# Publish
+*.publish/
+
+# EF Core Migrations build artifacts
+Migrations/*Designer.cs
+
+# Local secrets
+secrets.json
+
+# Configuration files (local overrides)
+appsettings.Development.json
+appsettings.Local.json
+
+# Test results
+TestResults/
+*.trx
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Others
+*.vspscc
+*.vssscc
+*.pdb
+
+# Windows image file caches
+*.db
+
+# Backup & temp files
+*.bak
+*.tmp
+*.swp
+*.swo
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# DotCover
+*.dotCover
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
