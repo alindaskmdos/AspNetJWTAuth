@@ -9,6 +9,7 @@ using reg.Services;
 using reg.Services.Interfaces;
 using reg.Models;
 using reg.Data.Repositories;
+using reg.Utils;
 
 namespace reg.Extensions
 {
@@ -111,10 +112,17 @@ namespace reg.Extensions
         {
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<TokenService>();
+            services.AddTransient<EmailConfirmationService>(provider =>
+                {
+                    var emailSender = provider.GetRequiredService<EmailSender>();
+                    var hostUrl = configuration["HostUrl"];
+                    return new EmailConfirmationService(emailSender, hostUrl);
+                }
+            );
 
             services.Configure<RefreshTokenSettings>(configuration.GetSection("RefreshTokenSettings"));
 
-            services.AddTransient<Utils.EmailSender>();
+            services.AddTransient<EmailSender>();
 
             services.AddScoped<TokenRepository>();
             services.AddScoped<UserRepository>();

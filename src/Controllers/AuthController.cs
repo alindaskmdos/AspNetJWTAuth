@@ -15,6 +15,7 @@ namespace reg.Controllers
     {
         private readonly UserRepository _userRepository;
         private readonly TokenService _tokenService;
+        private readonly EmailConfirmationService _emailConfirmationService;
         private readonly TokenRepository _tokenRepository;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
@@ -26,7 +27,8 @@ namespace reg.Controllers
             TokenRepository tokenRepository,
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            EmailSender emailSender)
+            EmailSender emailSender,
+            EmailConfirmationService emailConfirmationService)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -34,6 +36,7 @@ namespace reg.Controllers
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _emailConfirmationService = emailConfirmationService;
         }
 
         [HttpPost("login")]
@@ -152,12 +155,29 @@ namespace reg.Controllers
                     Expiration = DateTime.UtcNow.AddHours(1)
                 };
 
+                var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                await _emailConfirmationService.SendConfirmationEmailAsync(newUser.Email, emailConfirmationToken);
+
                 return Ok(response);
             }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string token, string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return NotFound("Пользователь не найден");
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+                return BadRequest("Ошибка подтверждения email");
+
+            return Ok("Email подтвержден успешно");
         }
 
         // подключить IDistributedCache для блэклиста jwt (до истечения их срока) для полного контроля logout
