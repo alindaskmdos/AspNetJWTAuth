@@ -14,7 +14,6 @@ namespace reg.Controllers
     {
         private readonly UserRepository _userRepository;
         private readonly UserManager<User> _userManager;
-        private readonly ILogger<UsersController> _logger;
         private readonly TokenService _tokenService;
 
         public UsersController(
@@ -25,66 +24,7 @@ namespace reg.Controllers
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterUser(CreateUserDto userDto)
-        {
-            try
-            {
-                _logger.LogInformation("Начало регистрации пользователя с email: {Email}", userDto?.Email);
-
-                if (userDto == null)
-                {
-                    _logger.LogWarning("Получен null userDto");
-                    return BadRequest("Данные пользователя не предоставлены");
-                }
-
-                _logger.LogInformation("Проверка наличия email: {Email}", userDto.Email);
-                bool emailExists = await _userRepository.CheckEmailExists(userDto.Email);
-                if (emailExists)
-                {
-                    _logger.LogWarning($"Пользователь с email {userDto.Email} уже существует", userDto.Email);
-                    return BadRequest($"Пользователь с email {userDto.Email} уже существует");
-                }
-
-                _logger.LogInformation("Начало создания пользователя");
-
-                User? newUser = await _userRepository.RegisterUserAsync(userDto);
-
-                _logger.LogInformation($"Пользователь создан: {newUser.Id}", newUser?.Id);
-
-                if (newUser == null)
-                {
-                    _logger.LogError("RegisterUserAsync вернул null");
-                    return BadRequest("Не удалось создать пользователя");
-                }
-
-                var userResponse = new UserResponseDto
-                {
-                    Id = Guid.Parse(newUser.Id),
-                    Email = newUser.Email ?? string.Empty,
-                    FirstName = newUser.FirstName ?? string.Empty,
-                    LastName = newUser.LastName ?? string.Empty,
-                    CreatedAt = newUser.CreatedAt,
-                    Roles = new List<string>()
-                };
-
-                _logger.LogInformation($"Пользователь успешно зарегистрирован: {newUser.Id}", newUser.Id);
-                return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, userResponse);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogError(ex, "InvalidOperationException при регистрации пользователя");
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Необработанное исключение при регистрации пользователя");
-                return StatusCode(500, $"Внутренняя ошибка: {ex.Message}, Inner: {ex.InnerException?.Message}, Stack: {ex.StackTrace}");
-            }
         }
 
         [HttpGet]
@@ -285,8 +225,9 @@ namespace reg.Controllers
             }
         }
 
+        // добавить сюда код на почту для смены пароля
         [HttpPut("change-password")]
-        [Authorize]
+        [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> ChangeUserPassword(ChangePasswordDto changePasswordDto)
         {
             try
