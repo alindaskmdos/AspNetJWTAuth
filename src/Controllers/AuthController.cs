@@ -5,6 +5,7 @@ using reg.Models;
 using reg.Data.Repositories;
 using reg.Models.DTOs;
 using reg.Services;
+using reg.Utils;
 
 namespace reg.Controllers
 {
@@ -17,19 +18,22 @@ namespace reg.Controllers
         private readonly TokenRepository _tokenRepository;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly EmailSender _emailSender;
 
         public AuthController(
             UserRepository userRepository,
             TokenService tokenService,
             TokenRepository tokenRepository,
             UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            SignInManager<User> signInManager,
+            EmailSender emailSender)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _tokenRepository = tokenRepository;
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
         }
 
         [HttpPost("login")]
@@ -42,6 +46,26 @@ namespace reg.Controllers
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
             if (!result.Succeeded)
                 return BadRequest("Неверный пароль");
+
+            if (!await _userManager.GetTwoFactorEnabledAsync(user))
+                await _userManager.SetTwoFactorEnabledAsync(user, true);
+
+            var code = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+            await _emailSender.SendEmailAsync(user.Email, "Код подтверждения", $"Ваш код: {code}");
+
+            return Ok(new { requires2FA = true });
+        }
+
+        [HttpPost("2fa-login")]
+        public async Task<IActionResult> TwoFactorLogin(Auth2FaDto auth2FaDto)
+        {
+            User? user = await _userRepository.GetUserByEmail(auth2FaDto.Email);
+            if (user == null)
+                return Unauthorized("Пользователь с таким email не найден");
+
+            var valid = await _userManager.VerifyTwoFactorTokenAsync(user, "Email", auth2FaDto.Code);
+            if (!valid)
+                return Unauthorized("Код неверный");
 
             string accessToken = await _tokenService.GenerateAccessTokenAsync(user);
             string refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
@@ -138,7 +162,7 @@ namespace reg.Controllers
             }
         }
 
-        // подключить редис для блэклиста jwt (до истечения их срока) для полного контроля logout
+        // подключить IDistributedCache для блэклиста jwt (до истечения их срока) для полного контроля logout
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(RefreshTokenDto refreshTokenDto)
         {

@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>test_main</RootNamespace>
+    <RootNamespace>AspNetJWTAuth</RootNamespace>
     <UserSecretsId>39c58c20-3985-4625-aa4b-a37cbbfad2ed</UserSecretsId>
   </PropertyGroup>
 

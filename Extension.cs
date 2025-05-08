@@ -42,9 +42,15 @@ namespace reg.Extensions
                 options.User.RequireUniqueEmail = true;
                 options.User.AllowedUserNameCharacters =
                     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+
+                //2fa
+                options.Tokens.ProviderMap.Add("Email", new TokenProviderDescriptor(typeof(EmailTokenProvider<User>)));
+                options.Tokens.EmailConfirmationTokenProvider = "Email";
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+
+            services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(2));
 
             return services;
         }
@@ -109,6 +115,7 @@ namespace reg.Extensions
             services.Configure<RefreshTokenSettings>(configuration.GetSection("RefreshTokenSettings"));
 
             services.AddScoped<Utils.EmailSmtpChecker>();
+            services.AddTransient<Utils.EmailSender>();
 
             services.AddScoped<TokenRepository>();
             services.AddScoped<UserRepository>();

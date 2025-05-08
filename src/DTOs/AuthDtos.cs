@@ -12,6 +12,16 @@ namespace reg.Models.DTOs
         public string Password { get; set; } = string.Empty;
     }
 
+    public class Auth2FaDto
+    {
+        [Required]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(6)]
+        public string Code { get; set; } = string.Empty;
+    }
+
     public class TokenResponseDto
     {
         public string AccessToken { get; set; } = string.Empty;

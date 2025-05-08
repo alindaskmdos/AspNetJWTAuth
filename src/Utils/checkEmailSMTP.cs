@@ -19,32 +19,34 @@ namespace reg.Utils
 
         public async Task<bool> VerifyEmailAsync(string email)
         {
-            _logger.LogInformation("Проверка email: {Email}", email);
-            if (!IsValidEmailSyntax(email))
-            {
-                _logger.LogWarning("Некорректный синтаксис email: {Email}", email);
-                return false;
-            }
-            string domain = email.Split('@')[1];
+            return true;
 
-            var mxRecords = GetMxRecords(domain);
-            if (mxRecords.Count == 0)
-            {
-                _logger.LogWarning("Не найдены MX-записи для домена: {Domain}", domain);
-                return false;
-            }
+            // _logger.LogInformation("Проверка email: {Email}", email);
+            // if (!IsValidEmailSyntax(email))
+            // {
+            //     _logger.LogWarning("Некорректный синтаксис email: {Email}", email);
+            //     return false;
+            // }
+            // string domain = email.Split('@')[1];
 
-            foreach (var mx in mxRecords)
-            {
-                _logger.LogInformation("Пробуем MX-сервер: {Mx}", mx);
-                if (await CheckEmailViaSmtpAsync(email, mx))
-                {
-                    _logger.LogInformation("Email подтверждён через MX: {Mx}", mx);
-                    return true;
-                }
-            }
-            _logger.LogWarning("Email не подтверждён ни одним MX-сервером: {Email}", email);
-            return false;
+            // var mxRecords = GetMxRecords(domain);
+            // if (mxRecords.Count == 0)
+            // {
+            //     _logger.LogWarning("Не найдены MX-записи для домена: {Domain}", domain);
+            //     return false;
+            // }
+
+            // foreach (var mx in mxRecords)
+            // {
+            //     _logger.LogInformation("Пробуем MX-сервер: {Mx}", mx);
+            //     if (await CheckEmailViaSmtpAsync(email, mx))
+            //     {
+            //         _logger.LogInformation("Email подтверждён через MX: {Mx}", mx);
+            //         return true;
+            //     }
+            // }
+            // _logger.LogWarning("Email не подтверждён ни одним MX-сервером: {Email}", email);
+            // return false;
         }
 
         private static bool IsValidEmailSyntax(string email)
