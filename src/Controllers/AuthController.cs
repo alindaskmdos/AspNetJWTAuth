@@ -51,7 +51,7 @@ namespace reg.Controllers
                 await _userManager.SetTwoFactorEnabledAsync(user, true);
 
             var code = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
-            await _emailSender.SendEmailAsync(user.Email, "Код подтверждения", $"Ваш код: {code}");
+            await _emailSender.SendEmailAsync(user.Email ?? string.Empty, "Код подтверждения", $"Ваш код: {code}");
 
             return Ok(new { requires2FA = true });
         }
@@ -75,7 +75,6 @@ namespace reg.Controllers
                 UserId = user.Id,
                 Token = refreshToken,
                 CreatedAt = DateTime.UtcNow,
-                IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 ExpiresAt = DateTime.UtcNow.AddDays(7)
             };
 
@@ -97,7 +96,6 @@ namespace reg.Controllers
             try
             {
                 string IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
-                string IpAddressFromToken = await _tokenRepository.getIpAddressByRefreshToken(refreshTokenDto.RefreshToken);
 
                 var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(refreshTokenDto.AccessToken);
@@ -167,10 +165,6 @@ namespace reg.Controllers
         public async Task<IActionResult> Logout(RefreshTokenDto refreshTokenDto)
         {
             string IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
-            string IpAddressFromToken = await _tokenRepository.getIpAddressByRefreshToken(refreshTokenDto.RefreshToken);
-
-            if (IpAddress != IpAddressFromToken)
-                return BadRequest("IP адрес не совпадает с тем, что был использован при входе");
 
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(refreshTokenDto.AccessToken);

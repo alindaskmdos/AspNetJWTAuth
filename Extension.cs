@@ -114,7 +114,6 @@ namespace reg.Extensions
 
             services.Configure<RefreshTokenSettings>(configuration.GetSection("RefreshTokenSettings"));
 
-            services.AddScoped<Utils.EmailSmtpChecker>();
             services.AddTransient<Utils.EmailSender>();
 
             services.AddScoped<TokenRepository>();

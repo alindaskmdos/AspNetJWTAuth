@@ -10,19 +10,16 @@ namespace reg.Data.Repositories
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<User> _userManager;
-        private readonly EmailSmtpChecker _emailSmtpChecker;
         private readonly ILogger<UserRepository> _logger;
 
         public UserRepository(
             ApplicationDbContext context,
             UserManager<User> userManager,
-            ILogger<UserRepository> logger,
-            EmailSmtpChecker emailSmtpChecker)
+            ILogger<UserRepository> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _emailSmtpChecker = emailSmtpChecker ?? throw new ArgumentNullException(nameof(emailSmtpChecker));
         }
 
         public async Task<User?> RegisterUserAsync(CreateUserDto createUserDto)
@@ -43,14 +40,6 @@ namespace reg.Data.Repositories
             {
                 _logger.LogError("Password is null or empty");
                 throw new ArgumentException("Пароль не может быть пустым", nameof(createUserDto.Password));
-            }
-
-            bool checkEmail = await _emailSmtpChecker.VerifyEmailAsync(createUserDto.Email);
-
-            if (checkEmail == false)
-            {
-                _logger.LogError("Email verification failed for {Email}", createUserDto.Email);
-                throw new InvalidOperationException("Ошибка валидации email. Проверьте правильность введенного адреса электронной почты.");
             }
 
             _logger.LogInformation("Создание пользователя с email: {Email}", createUserDto.Email);

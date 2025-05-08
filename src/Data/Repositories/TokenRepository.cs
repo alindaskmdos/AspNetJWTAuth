@@ -26,14 +26,6 @@ namespace reg.Data.Repositories
             return (rt != null, rt?.User);
         }
 
-        public async Task<string> getIpAddressByRefreshToken(string refreshToken)
-        {
-            var token = await _context.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
-
-            return token?.IpAddress ?? string.Empty;
-        }
-
         public async Task<(bool isValid, User? user)> ValidateRefreshTokenByEmailAsync(string email, string refreshToken)
         {
             var user = await _userManager.FindByEmailAsync(email);

@@ -168,10 +168,6 @@ namespace test_main.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("text");

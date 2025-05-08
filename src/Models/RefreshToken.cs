@@ -20,9 +20,6 @@ namespace reg.Models
         [Required]
         public DateTime ExpiresAt { get; set; }
 
-        [Required]
-        public string IpAddress { get; set; } = string.Empty;
-
         [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
     }

@@ -18,7 +18,7 @@ namespace reg.Utils
                 EnableSsl = true
             };
 
-            var msg = new MailMessage(from: smtp["From"], to: to, subject: subject, body: message) { IsBodyHtml = true };
+            var msg = new MailMessage(from: smtp["From"] ?? string.Empty, to: to, subject: subject, body: message) { IsBodyHtml = true };
 
             await client.SendMailAsync(msg);
         }
