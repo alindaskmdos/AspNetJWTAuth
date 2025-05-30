@@ -5,6 +5,8 @@ using reg.Models;
 using reg.Data.Repositories;
 using reg.Services;
 using reg.Models.DTOs;
+using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace reg.Controllers
 {
@@ -15,16 +17,21 @@ namespace reg.Controllers
         private readonly UserRepository _userRepository;
         private readonly UserManager<User> _userManager;
         private readonly TokenService _tokenService;
+        private readonly EmailConfirmationService _emailConfirmationService;
+        private readonly ILogger<UsersController> _logger;
 
         public UsersController(
             UserRepository userRepository,
             UserManager<User> userManager,
-            ILogger<UsersController> logger,
-            TokenService tokenService)
+            TokenService tokenService,
+            EmailConfirmationService emailConfirmationService,
+            ILogger<UsersController> logger)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+            _userRepository = userRepository;
+            _userManager = userManager;
+            _tokenService = tokenService;
+            _emailConfirmationService = emailConfirmationService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -62,113 +69,58 @@ namespace reg.Controllers
                 return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
             }
         }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUserById(string id)
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
         {
             try
             {
-                var user = await _userRepository.GetUserById(id);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var user = await _userRepository.GetUserByEmail(forgotPasswordDto.Email);
                 if (user == null)
-                    return NotFound($"Пользователь с ID {id} не найден");
-
-                var roles = await _userManager.GetRolesAsync(user);
-                var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
-
-                var userDto = new UserResponseDto
                 {
-                    Id = Guid.Parse(user.Id),
-                    Email = user.Email ?? string.Empty,
-                    FirstName = user.FirstName ?? string.Empty,
-                    LastName = user.LastName ?? string.Empty,
-                    Roles = roles.ToList(),
-                    CreatedAt = user.CreatedAt,
-                    IsLocked = lockoutEnd != null && lockoutEnd > DateTime.UtcNow
-                };
+                    return BadRequest();
+                }
 
-                return Ok(userDto);
-            }
-            catch (ArgumentNullException)
-            {
-                return BadRequest("ID пользователя не может быть пустым");
+                var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                await _emailConfirmationService.SendResetPasswordEmailAsync(forgotPasswordDto.Email, passwordResetToken);
+
+                return Ok("Письмо для сброса пароля отправлено на ваш email");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
+                _logger.LogError(ex, "Ошибка при отправке письма для сброса пароля для email: {Email}", forgotPasswordDto.Email);
+                return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
 
-        [HttpGet("by-email")]
-        public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
             try
             {
-                User? user = await _userRepository.GetUserByEmail(email);
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var user = await _userRepository.GetUserByEmail(resetPasswordDto.Email);
                 if (user == null)
-                    return NotFound($"Пользователь с email {email} не найден");
+                    return BadRequest("Неверный токен или email");
 
-                var roles = await _userManager.GetRolesAsync(user);
-                var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
-
-                var userDto = new UserResponseDto
+                var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.Token, resetPasswordDto.NewPassword);
+                if (!result.Succeeded)
                 {
-                    Id = Guid.Parse(user.Id),
-                    Email = user.Email ?? string.Empty,
-                    FirstName = user.FirstName ?? string.Empty,
-                    LastName = user.LastName ?? string.Empty,
-                    Roles = roles.ToList(),
-                    CreatedAt = user.CreatedAt,
-                    IsLocked = lockoutEnd != null && lockoutEnd > DateTime.UtcNow
-                };
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    return BadRequest($"Не удалось сбросить пароль: {errors}");
+                }
 
-                return Ok(userDto);
-            }
-            catch (ArgumentNullException)
-            {
-                return BadRequest("Email не может быть пустым");
+                _logger.LogInformation("Пароль успешно сброшен для пользователя: {Email}", resetPasswordDto.Email);
+                return Ok("Пароль успешно сброшен");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
-            }
-        }
-
-        [HttpPut("{id}/profile")]
-        [Authorize]
-        public async Task<IActionResult> UpdateUserProfile(string id, UpdateUserProfileDto profileDto)
-        {
-            try
-            {
-                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                var isAdmin = User.IsInRole("Admin");
-
-                if (!isAdmin && currentUserId != id)
-                    return Forbid("У вас нет прав на обновление этого профиля");
-
-                var user = await _userRepository.UpdateUserProfile(id, profileDto);
-
-                var userResponse = new UserResponseDto
-                {
-                    Id = Guid.Parse(user.Id),
-                    Email = user.Email ?? string.Empty,
-                    FirstName = user.FirstName ?? string.Empty,
-                    LastName = user.LastName ?? string.Empty,
-                    CreatedAt = user.CreatedAt
-                };
-
-                return Ok(userResponse);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
+                _logger.LogError(ex, "Ошибка при сбросе пароля для email: {Email}", resetPasswordDto.Email);
+                return StatusCode(500, "Внутренняя ошибка сервера");
             }
         }
 
@@ -224,31 +176,67 @@ namespace reg.Controllers
                 return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
             }
         }
-
-        // добавить сюда код на почту для смены пароля
         [HttpPut("change-password")]
         [Authorize(Roles = "Admin, User")]
-        public async Task<IActionResult> ChangeUserPassword(ChangePasswordDto changePasswordDto)
+        public async Task<IActionResult> ChangeUserPassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var currentUserEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            var isAdmin = User.IsInRole("Admin");
+
+            var user = await _userRepository.GetUserByEmail(changePasswordDto.Email);
+            if (user == null)
+            {
+                return NotFound($"Пользователь с email {changePasswordDto.Email} не найден");
+            }
+
+            if (!isAdmin && currentUserEmail != changePasswordDto.Email)
+                return Forbid("У вас нет прав на изменение пароля этого пользователя");
+
+            var passwordValid = await _userManager.CheckPasswordAsync(user, changePasswordDto.CurrentPassword);
+            if (!passwordValid)
+                return BadRequest("Неверный текущий пароль");
+
+            var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return BadRequest($"Не удалось изменить пароль: {errors}");
+            }
+
+            return Ok("Пароль успешно изменен");
+        }
+
+        [HttpGet("by-email")]
+        public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
         {
             try
             {
-                var currentUserEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-                var isAdmin = User.IsInRole("Admin");
+                User? user = await _userRepository.GetUserByEmail(email);
+                if (user == null)
+                    return NotFound($"Пользователь с email {email} не найден");
 
-                if (!isAdmin && currentUserEmail != changePasswordDto.Email)
-                    return Forbid("У вас нет прав на изменение пароля этого пользователя");
+                var roles = await _userManager.GetRolesAsync(user);
+                var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
 
-                await _userRepository.ChangeUserPassword(changePasswordDto);
+                var userDto = new UserResponseDto
+                {
+                    Id = Guid.Parse(user.Id),
+                    Email = user.Email ?? string.Empty,
+                    FirstName = user.FirstName ?? string.Empty,
+                    LastName = user.LastName ?? string.Empty,
+                    Roles = roles.ToList(),
+                    CreatedAt = user.CreatedAt,
+                    IsLocked = lockoutEnd != null && lockoutEnd > DateTime.UtcNow
+                };
 
-                return Ok("Пароль успешно изменен");
+                return Ok(userDto);
             }
-            catch (InvalidOperationException ex)
+            catch (ArgumentNullException)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
+                return BadRequest("Email не может быть пустым");
             }
             catch (Exception ex)
             {
@@ -256,7 +244,81 @@ namespace reg.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
+        [HttpGet("by-id/{id}")]
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            try
+            {
+                var user = await _userRepository.GetUserById(id);
+                if (user == null)
+                    return NotFound($"Пользователь с ID {id} не найден");
+
+                var roles = await _userManager.GetRolesAsync(user);
+                var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+
+                var userDto = new UserResponseDto
+                {
+                    Id = Guid.Parse(user.Id),
+                    Email = user.Email ?? string.Empty,
+                    FirstName = user.FirstName ?? string.Empty,
+                    LastName = user.LastName ?? string.Empty,
+                    Roles = roles.ToList(),
+                    CreatedAt = user.CreatedAt,
+                    IsLocked = lockoutEnd != null && lockoutEnd > DateTime.UtcNow
+                };
+
+                return Ok(userDto);
+            }
+            catch (ArgumentNullException)
+            {
+                return BadRequest("ID пользователя не может быть пустым");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
+            }
+        }
+
+        [HttpPut("by-id/{id}/profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserProfile(string id, UpdateUserProfileDto profileDto)
+        {
+            try
+            {
+                var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var isAdmin = User.IsInRole("Admin");
+
+                if (!isAdmin && currentUserId != id)
+                    return Forbid("У вас нет прав на обновление этого профиля");
+
+                var user = await _userRepository.UpdateUserProfile(id, profileDto);
+
+                var userResponse = new UserResponseDto
+                {
+                    Id = Guid.Parse(user.Id),
+                    Email = user.Email ?? string.Empty,
+                    FirstName = user.FirstName ?? string.Empty,
+                    LastName = user.LastName ?? string.Empty,
+                    CreatedAt = user.CreatedAt
+                };
+
+                return Ok(userResponse);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Внутренняя ошибка сервера: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("by-id/{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUserById(string id)
         {
@@ -300,7 +362,7 @@ namespace reg.Controllers
             }
         }
 
-        [HttpPost("{id}/lock")]
+        [HttpPost("by-id/{id}/lock")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> LockUser(string id)
         {
@@ -322,7 +384,7 @@ namespace reg.Controllers
             }
         }
 
-        [HttpPost("{id}/unlock")]
+        [HttpPost("by-id/{id}/unlock")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UnlockUser(string id)
         {

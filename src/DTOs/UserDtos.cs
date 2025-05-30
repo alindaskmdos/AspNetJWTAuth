@@ -24,7 +24,10 @@ namespace reg.Models.DTOs
 
     public class UserResponseDto
     {
+        [Required]
         public Guid Id { get; set; }
+        [Required]
+        [EmailAddress]
         public string Email { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
@@ -40,18 +43,8 @@ namespace reg.Models.DTOs
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
 
+        [Required]
         [EmailAddress]
         public string? NewEmail { get; set; }
-    }
-
-    public class PagedResultDto<T>
-    {
-        public List<T> Items { get; set; } = new List<T>();
-        public int TotalCount { get; set; }
-        public int PageSize { get; set; }
-        public int CurrentPage { get; set; }
-        public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
-        public bool HasPreviousPage => CurrentPage > 1;
-        public bool HasNextPage => CurrentPage < TotalPages;
     }
 }

@@ -1,4 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Swashbuckle.AspNetCore.Annotations;
 using reg.Extensions;
 using reg.Data;
 using reg.Settings;
@@ -42,6 +46,7 @@ namespace reg
                 {
                     options.JsonSerializerOptions.WriteIndented = true;
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                 });
 
             builder.Services.AddCors(options =>
@@ -57,11 +62,14 @@ namespace reg
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddSwagger();
+            builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();
-
-            app.UseSwagger();
+            var app = builder.Build(); app.UseSwagger();
             app.UseSwaggerUI();
+
+            app.UseStaticFiles();
+
+            app.UseHttpsRedirection();
 
             app.UseMiddleware<ErrorHandlingMiddleware>();
 
@@ -75,7 +83,6 @@ namespace reg
             {
                 app.UseHttpsRedirection();
             }
-
             app.UseAuthentication();
             app.UseAuthorization();
 

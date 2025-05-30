@@ -34,15 +34,20 @@ namespace reg.Services
 
         public async Task<string> GenerateAccessTokenAsync(User user)
         {
-            var roles = await _userManager.GetRolesAsync(user);
+            var roles = await _userManager.GetRolesAsync(user); var jti = Guid.NewGuid().ToString();
+            var createdAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ");
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("CreatedAt", DateTime.UtcNow.ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, jti),
+                new Claim("CreatedAt", createdAt),
+                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
+
+            // Логирование для отладки
+            Console.WriteLine($"Генерация токена для {user.Email}: JTI={jti}, CreatedAt={createdAt}");
 
             foreach (var role in roles)
             {

@@ -10,6 +10,7 @@ using reg.Services.Interfaces;
 using reg.Models;
 using reg.Data.Repositories;
 using reg.Utils;
+using System.Security.Claims;
 
 namespace reg.Extensions
 {
@@ -83,7 +84,8 @@ namespace reg.Extensions
                     ValidIssuer = issuer,
                     ValidAudience = audience,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero,
+                    RoleClaimType = ClaimTypes.Role,
                 };
 
                 options.Events = new JwtBearerEvents
@@ -104,6 +106,17 @@ namespace reg.Extensions
                 options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
                 options.AddPolicy("RequireUserRole", policy => policy.RequireRole("User"));
             });
+
+            RoleManager<IdentityRole> roleManager = services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
+
+            if (!roleManager.RoleExistsAsync("User").Result)
+            {
+                roleManager.CreateAsync(new IdentityRole("User"));
+            }
+            if (!roleManager.RoleExistsAsync("Admin").Result)
+            {
+                roleManager.CreateAsync(new IdentityRole("Admin"));
+            }
 
             return services;
         }

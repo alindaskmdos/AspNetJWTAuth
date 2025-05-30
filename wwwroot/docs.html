@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - AspNetJWTAuth</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            line-height: 1.7;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .nav-pills {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .nav-pill {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-pill:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .content-grid {
+            display: grid;
+            gap: 30px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-description {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .endpoints-grid {
+            display: grid;
+            gap: 25px;
+        }
+
+        .endpoint {
+            background: linear-gradient(135deg, #f8f9ff, #ffffff);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #e1e8ff;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .endpoint:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .method {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .method.get {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .method.post {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .method.put {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: #333;
+        }
+
+        .method.delete {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .endpoint-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+
+        .url {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            background: linear-gradient(135deg, #e9ecef, #f8f9fa);
+            padding: 12px 18px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 0.95rem;
+            border: 1px solid #dee2e6;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .auth-required {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .admin-required {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .endpoint-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .example {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .example-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .example pre {
+            padding: 20px;
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            background: #ffffff;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #f8f9ff, #ffffff);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid #e1e8ff;
+        }
+
+        .info-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .info-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-card li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card li:last-child {
+            border-bottom: none;
+        }
+
+        .status-code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .status-200 { background: #d4edda; color: #155724; }
+        .status-400 { background: #f8d7da; color: #721c24; }
+        .status-401 { background: #fff3cd; color: #856404; }
+        .status-403 { background: #ffeaa7; color: #856404; }
+        .status-404 { background: #d1ecf1; color: #0c5460; }
+        .status-500 { background: #f8d7da; color: #721c24; }
+
+        .flow-steps {
+            display: grid;
+            gap: 20px;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .step-description {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .nav-pills {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .section {
+                padding: 25px;
+            }
+
+            .endpoint-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Анимации */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AspNetJWTAuth API</h1>
+            <p class="subtitle">Комплексная документация по REST API с JWT аутентификацией и двухфакторной защитой</p>
+        </div>
+
+        <div class="back-link">
+            <a href="/swagger/index.html" class="back-btn">
+                ← Вернуться к интерфейсу тестирования
+            </a>
+        </div>
+
+        <div class="nav-pills">
+            <a href="#auth" class="nav-pill">🔐 Аутентификация</a>
+            <a href="#users" class="nav-pill">👥 Пользователи</a>
+            <a href="#roles" class="nav-pill">🎭 Роли</a>
+            <a href="#models" class="nav-pill">📋 Модели данных</a>
+            <a href="#errors" class="nav-pill">⚠️ Ошибки</a>
+            <a href="#security" class="nav-pill">🛡️ Безопасность</a>
+        </div>
+
+        <div class="content-grid">
+            <!-- АУТЕНТИФИКАЦИЯ -->
+            <div id="auth" class="section">
+                <h2 class="section-title">🔐 Аутентификация</h2>
+                <div class="section-description">
+                    Система аутентификации использует JWT токены с обязательной двухфакторной аутентификацией через email. 
+                    Все операции входа требуют подтверждения кода, отправленного на электронную почту.
+                </div>
+
+                <div class="endpoints-grid">
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Регистрация пользователя</span>
+                        </div>
+                        <div class="url">/api/auth/register</div>
+                        <div class="endpoint-description">
+                            Создает новый аккаунт пользователя в системе. После регистрации на email отправляется письмо с подтверждением.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "user@example.com",
+  "Password": "StrongPassword123!",
+  "FirstName": "Иван",
+  "LastName": "Петров"
+}</pre>
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Response (200 OK)</div>
+                            <pre>{
+  "AccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "RefreshToken": "abc123def456...",
+  "Expiration": "2025-05-30T15:00:00Z"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Первичная аутентификация</span>
+                        </div>
+                        <div class="url">/api/auth/login</div>
+                        <div class="endpoint-description">
+                            Первый этап входа в систему. Проверяет логин и пароль, затем отправляет код двухфакторной аутентификации на email.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "user@example.com",
+  "Password": "StrongPassword123!"
+}</pre>
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Response (200 OK)</div>
+                            <pre>{
+  "requires2FA": true,
+  "message": "Код подтверждения отправлен на email"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Подтверждение 2FA</span>
+                        </div>
+                        <div class="url">/api/auth/2fa-login</div>
+                        <div class="endpoint-description">
+                            Второй этап аутентификации. Подтверждает код из email и выдает JWT токены доступа.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "user@example.com",
+  "Code": "123456"
+}</pre>
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Response (200 OK)</div>
+                            <pre>{
+  "AccessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "RefreshToken": "abc123def456...",
+  "Expiration": "2025-05-30T15:00:00Z"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Обновление токенов</span>
+                        </div>
+                        <div class="url">/api/auth/refresh</div>
+                        <div class="endpoint-description">
+                            Обновляет истекший access token используя действующий refresh token.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "AccessToken": "expired_access_token",
+  "RefreshToken": "valid_refresh_token"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Запрос сброса пароля</span>
+                        </div>
+                        <div class="url">/api/auth/forgot-password</div>
+                        <div class="endpoint-description">
+                            Отправляет ссылку для сброса пароля на указанный email адрес.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "user@example.com"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Сброс пароля</span>
+                        </div>
+                        <div class="url">/api/auth/reset-password</div>
+                        <div class="endpoint-description">
+                            Устанавливает новый пароль используя токен из email.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Token": "reset_token_from_email",
+  "Email": "user@example.com",
+  "NewPassword": "NewStrongPassword123!"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-title">Подтверждение email</span>
+                        </div>
+                        <div class="url">/api/auth/confirm-email?token={token}&email={email}</div>
+                        <div class="endpoint-description">
+                            Активирует аккаунт пользователя по ссылке из регистрационного письма.
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Выход из системы</span>
+                        </div>
+                        <div class="url">/api/auth/logout</div>
+                        <div class="auth-badge auth-required">🔒 Требует авторизации</div>
+                        <div class="endpoint-description">
+                            Отзывает refresh token и завершает сессию пользователя.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "AccessToken": "current_access_token",
+  "RefreshToken": "current_refresh_token"
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ -->
+            <div id="users" class="section">
+                <h2 class="section-title">👥 Управление пользователями</h2>
+                <div class="section-description">
+                    Полный набор операций для управления пользователями: просмотр, редактирование, блокировка и удаление. 
+                    Доступ к операциям зависит от роли пользователя и политик безопасности.
+                </div>
+
+                <div class="endpoints-grid">
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-title">Получить всех пользователей</span>
+                        </div>
+                        <div class="url">/api/users</div>
+                        <div class="auth-badge admin-required">👑 Только для администраторов</div>
+                        <div class="endpoint-description">
+                            Возвращает полный список всех зарегистрированных пользователей в системе.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Response (200 OK)</div>
+                            <pre>[
+  {
+    "Id": "12345",
+    "Email": "user1@example.com",
+    "FirstName": "Иван",
+    "LastName": "Петров",
+    "EmailConfirmed": true,
+    "LockoutEnd": null
+  },
+  ...
+]</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-title">Найти пользователя по email</span>
+                        </div>
+                        <div class="url">/api/users/by-email?email={email}</div>
+                        <div class="endpoint-description">
+                            Поиск и получение информации о пользователе по email адресу.
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-title">Найти пользователя по ID</span>
+                        </div>
+                        <div class="url">/api/users/by-id/{id}</div>
+                        <div class="endpoint-description">
+                            Получение информации о пользователе по уникальному идентификатору.
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method put">PUT</span>
+                            <span class="endpoint-title">Обновить email пользователя</span>
+                        </div>
+                        <div class="url">/api/users/update-email</div>
+                        <div class="auth-badge auth-required">🔒 Требует авторизации</div>
+                        <div class="endpoint-description">
+                            Изменение email адреса. Пользователи могут менять только свой email, администраторы - любой.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "current@example.com",
+  "NewEmail": "new@example.com"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method put">PUT</span>
+                            <span class="endpoint-title">Изменить пароль</span>
+                        </div>
+                        <div class="url">/api/users/change-password</div>
+                        <div class="auth-badge auth-required">🔒 Требует авторизации</div>
+                        <div class="endpoint-description">
+                            Смена пароля пользователя с проверкой текущего пароля.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "user@example.com",
+  "CurrentPassword": "OldPassword123!",
+  "NewPassword": "NewPassword123!",
+  "ConfirmPassword": "NewPassword123!"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method put">PUT</span>
+                            <span class="endpoint-title">Обновить профиль</span>
+                        </div>
+                        <div class="url">/api/users/by-id/{id}/profile</div>
+                        <div class="auth-badge auth-required">🔒 Требует авторизации</div>
+                        <div class="endpoint-description">
+                            Обновление имени и фамилии пользователя.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "FirstName": "Новое Имя",
+  "LastName": "Новая Фамилия"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Заблокировать пользователя</span>
+                        </div>
+                        <div class="url">/api/users/by-id/{id}/lock</div>
+                        <div class="auth-badge admin-required">👑 Только для администраторов</div>
+                        <div class="endpoint-description">
+                            Временная блокировка доступа пользователя к системе.
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Разблокировать пользователя</span>
+                        </div>
+                        <div class="url">/api/users/by-id/{id}/unlock</div>
+                        <div class="auth-badge admin-required">👑 Только для администраторов</div>
+                        <div class="endpoint-description">
+                            Снятие блокировки с пользователя.
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method delete">DELETE</span>
+                            <span class="endpoint-title">Удалить пользователя</span>
+                        </div>
+                        <div class="url">/api/users/by-id/{id}</div>
+                        <div class="auth-badge admin-required">👑 Только для администраторов</div>
+                        <div class="endpoint-description">
+                            Полное удаление пользователя из системы. Операция необратима.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- УПРАВЛЕНИЕ РОЛЯМИ -->
+            <div id="roles" class="section">
+                <h2 class="section-title">🎭 Управление ролями</h2>
+                <div class="section-description">
+                    Система ролей позволяет гибко настраивать права доступа пользователей. 
+                    Поддерживается назначение и снятие ролей, создание новых ролей.
+                </div>
+
+                <div class="endpoints-grid">
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-title">Получить все роли</span>
+                        </div>
+                        <div class="url">/api/role/all</div>
+                        <div class="endpoint-description">
+                            Возвращает список всех существующих ролей в системе.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Response (200 OK)</div>
+                            <pre>[
+  {
+    "Id": "role-1",
+    "Name": "Admin",
+    "NormalizedName": "ADMIN"
+  },
+  {
+    "Id": "role-2", 
+    "Name": "User",
+    "NormalizedName": "USER"
+  }
+]</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Создать роль</span>
+                        </div>
+                        <div class="url">/api/role/create?roleName={roleName}</div>
+                        <div class="endpoint-description">
+                            Создает новую роль в системе с указанным именем.
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Назначить роль пользователю</span>
+                        </div>
+                        <div class="url">/api/role/assign</div>
+                        <div class="endpoint-description">
+                            Назначает указанную роль пользователю.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "user@example.com",
+  "Role": "Admin"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method post">POST</span>
+                            <span class="endpoint-title">Удалить роль у пользователя</span>
+                        </div>
+                        <div class="url">/api/role/remove</div>
+                        <div class="endpoint-description">
+                            Снимает указанную роль с пользователя.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Request Body</div>
+                            <pre>{
+  "Email": "user@example.com",
+  "Role": "Admin"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="endpoint">
+                        <div class="endpoint-header">
+                            <span class="method get">GET</span>
+                            <span class="endpoint-title">Получить роли пользователя</span>
+                        </div>
+                        <div class="url">/api/role/getUserRoles?email={email}</div>
+                        <div class="endpoint-description">
+                            Возвращает список всех ролей, назначенных указанному пользователю.
+                        </div>
+                        <div class="example">
+                            <div class="example-header">Response (200 OK)</div>
+                            <pre>[
+  "User",
+  "Admin"
+]</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- МОДЕЛИ ДАННЫХ -->
+            <div id="models" class="section">
+                <h2 class="section-title">📋 Модели данных</h2>
+                <div class="section-description">
+                    Описание структур данных, используемых в API запросах и ответах.
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>👤 User Model</h3>
+                        <div class="example">
+                            <div class="example-header">UserResponseDto</div>
+                            <pre>{
+  "Id": "string",
+  "Email": "string",
+  "FirstName": "string",
+  "LastName": "string",
+  "EmailConfirmed": "boolean",
+  "LockoutEnd": "datetime|null"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🔑 Token Model</h3>
+                        <div class="example">
+                            <div class="example-header">TokenResponseDto</div>
+                            <pre>{
+  "AccessToken": "string",
+  "RefreshToken": "string",
+  "Expiration": "datetime"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>📝 Registration Model</h3>
+                        <div class="example">
+                            <div class="example-header">CreateUserDto</div>
+                            <pre>{
+  "Email": "string (required)",
+  "Password": "string (required)",
+  "FirstName": "string",
+  "LastName": "string"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🔒 Login Model</h3>
+                        <div class="example">
+                            <div class="example-header">LoginDto</div>
+                            <pre>{
+  "Email": "string (required)",
+  "Password": "string (required)"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🎭 Role Model</h3>
+                        <div class="example">
+                            <div class="example-header">UserRoleDto</div>
+                            <pre>{
+  "Email": "string (required)",
+  "Role": "string (required)"
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🔐 Password Model</h3>
+                        <div class="example">
+                            <div class="example-header">ChangePasswordDto</div>
+                            <pre>{
+  "Email": "string (required)",
+  "CurrentPassword": "string (required)",
+  "NewPassword": "string (required)",
+  "ConfirmPassword": "string (required)"
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ОБРАБОТКА ОШИБОК -->
+            <div id="errors" class="section">
+                <h2 class="section-title">⚠️ Обработка ошибок</h2>
+                <div class="section-description">
+                    API возвращает стандартные HTTP коды состояния и детальные сообщения об ошибках.
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>📊 Коды состояния</h3>
+                        <ul>
+                            <li><span class="status-code status-200">200</span> Успешное выполнение</li>
+                            <li><span class="status-code status-400">400</span> Некорректный запрос</li>
+                            <li><span class="status-code status-401">401</span> Не авторизован</li>
+                            <li><span class="status-code status-403">403</span> Доступ запрещен</li>
+                            <li><span class="status-code status-404">404</span> Ресурс не найден</li>
+                            <li><span class="status-code status-500">500</span> Внутренняя ошибка сервера</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🚨 Типичные ошибки</h3>
+                        <ul>
+                            <li>💥 Неверный формат email</li>
+                            <li>🔒 Слабый пароль</li>
+                            <li>⏰ Истекший токен</li>
+                            <li>🚫 Пользователь заблокирован</li>
+                            <li>📧 Email не подтвержден</li>
+                            <li>❌ Неверный код 2FA</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>📋 Пример ошибки</h3>
+                        <div class="example">
+                            <div class="example-header">Error Response</div>
+                            <pre>{
+  "error": "ValidationError",
+  "message": "Неверный формат email адреса",
+  "details": {
+    "field": "Email",
+    "code": "INVALID_FORMAT"
+  }
+}</pre>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🔍 Отладка</h3>
+                        <ul>
+                            <li>🟢 Проверяйте заголовки авторизации</li>
+                            <li>🟡 Валидируйте входные данные</li>
+                            <li>🔴 Обрабатывайте истечение токенов</li>
+                            <li>🔵 Следите за статусами пользователей</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- БЕЗОПАСНОСТЬ -->
+            <div id="security" class="section">
+                <h2 class="section-title">🛡️ Безопасность</h2>
+                <div class="section-description">
+                    Руководство по безопасному использованию API и лучшим практикам.
+                </div>
+
+                <div class="flow-steps">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">🔐 Двухфакторная аутентификация</div>
+                            <div class="step-description">
+                                Обязательная для всех пользователей. Код отправляется на email и действителен 10 минут.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">🎟️ JWT токены</div>
+                            <div class="step-description">
+                                Access token действителен 15 минут, refresh token - 7 дней. Используйте refresh для обновления.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">🔒 Требования к паролям</div>
+                            <div class="step-description">
+                                Минимум 8 символов, включая буквы, цифры и специальные символы.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">🎭 Система ролей</div>
+                            <div class="step-description">
+                                User (по умолчанию) и Admin. Проверка прав на уровне контроллеров.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flow-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">🚫 Защита от атак</div>
+                            <div class="step-description">
+                                Блокировка аккаунтов после неудачных попыток, валидация входных данных, защита от CSRF.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>🔑 Авторизация</h3>
+                        <div class="example">
+                            <div class="example-header">HTTP Header</div>
+                            <pre>Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</pre>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>⏱️ Время жизни токенов</h3>
+                        <ul>
+                            <li>🕒 Access Token: 15 минут</li>
+                            <li>🗓️ Refresh Token: 7 дней</li>
+                            <li>📧 Email Token: 24 часа</li>
+                            <li>🔐 2FA Code: 10 минут</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🚨 Рекомендации</h3>
+                        <ul>
+                            <li>🔄 Регулярно обновляйте токены</li>
+                            <li>🔒 Не передавайте токены в URL</li>
+                            <li>📱 Используйте HTTPS</li>
+                            <li>💾 Безопасно храните refresh токены</li>
+                            <li>🚪 Реализуйте автоматический logout</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>🌊 Процесс аутентификации</h3>
+                        <div class="flow-steps">
+                            <div class="flow-step">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <div class="step-description">POST /api/auth/login</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <div class="step-description">Получить код из email</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <div class="step-description">POST /api/auth/2fa-login</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <div class="step-description">Получить JWT токены</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="/swagger/index.html" class="back-btn">
+                ← Вернуться к интерфейсу тестирования
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.nav-pill').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+            sectionObserver.observe(section);
+        });
+    </script>
+</body>
+</html>

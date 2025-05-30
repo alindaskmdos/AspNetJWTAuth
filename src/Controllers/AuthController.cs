@@ -90,6 +90,8 @@ namespace reg.Controllers
                 Expiration = DateTime.UtcNow.AddHours(1)
             };
 
+            await _userManager.ResetAccessFailedCountAsync(user);
+
             return Ok(response);
         }
 
@@ -135,6 +137,8 @@ namespace reg.Controllers
                 if (newUser == null)
                     return BadRequest("Ошибка регистрации пользователя");
 
+                await _userManager.AddToRoleAsync(newUser, "User");
+
                 string accessToken = await _tokenService.GenerateAccessTokenAsync(newUser);
                 string refreshToken = await _tokenService.GenerateRefreshTokenAsync(newUser);
 
@@ -156,7 +160,10 @@ namespace reg.Controllers
                 };
 
                 var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-                await _emailConfirmationService.SendConfirmationEmailAsync(newUser.Email, emailConfirmationToken);
+                if (!string.IsNullOrEmpty(newUser.Email))
+                {
+                    await _emailConfirmationService.SendConfirmationEmailAsync(newUser.Email, emailConfirmationToken);
+                }
 
                 return Ok(response);
             }
